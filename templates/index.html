@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des fichiers JSON</title>
+</head>
+
+<body>
+    <h1>Uploader un fichier JSON</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="fileInput" name="file" accept="application/json">
+        <button type="submit">Envoyer</button>
+    </form>
+
+    <h2>Fichiers disponibles</h2>
+    <ul id="fileList">
+        {% for file in files %}
+        <li>
+            {{ file }}
+            <button onclick="deleteFile('{{ file }}')">Supprimer</button>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <script>
+        document.getElementById('uploadForm').onsubmit = async function (event) {
+            event.preventDefault();
+            let formData = new FormData();
+            formData.append("file", document.getElementById("fileInput").files[0]);
+            await fetch("/upload", { method: "POST", body: formData });
+            location.reload();
+        }
+
+        async function deleteFile(filename) {
+            await fetch(`/file/${filename}`, { method: "DELETE" });
+            location.reload();
+        }
+    </script>
+</body>
+
+</html>
