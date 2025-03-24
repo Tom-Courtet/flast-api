@@ -5,37 +5,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des fichiers JSON</title>
+    <link href="{{ url_for('static', filename='css/tailwind.css') }}" rel="stylesheet">
 </head>
 
-<body>
-    <h1>Uploader un fichier JSON</h1>
-    <form id="uploadForm" enctype="multipart/form-data">
-        <input type="file" id="fileInput" name="file" accept="application/json">
-        <button type="submit">Envoyer</button>
-    </form>
+<body class="bg-gray-50 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
+        <!-- En-tête -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Gestion des fichiers JSON</h1>
+            <p class="text-gray-600 mt-2">Uploader et gérer vos fichiers JSON</p>
+        </div>
 
-    <h2>Fichiers disponibles</h2>
-    <ul id="fileList">
-        {% for file in files %}
-        <li>
-            {{ file }}
-            <button onclick="deleteFile('{{ file }}')">Supprimer</button>
-        </li>
-        {% endfor %}
-    </ul>
+        <!-- Formulaire d'upload -->
+        <div class="mb-10 p-6 bg-gray-50 rounded-lg border border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Uploader un fichier</h2>
+            <form id="uploadForm" enctype="multipart/form-data" class="flex flex-col sm:flex-row gap-4">
+                <div class="flex-grow">
+                    <input type="file" id="fileInput" name="file" accept="application/json" class="block w-full text-sm text-gray-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-md file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-blue-50 file:text-blue-700
+                            hover:file:bg-blue-100" required>
+                </div>
+                <button type="submit"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Envoyer
+                </button>
+            </form>
+        </div>
+
+        <!-- Liste des fichiers -->
+        <div>
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Fichiers disponibles</h2>
+            <ul id="fileList" class="space-y-2">
+                {% for file in files %}
+                <li
+                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
+                    <div class="flex items-center gap-4">
+                        <span class="font-mono text-sm text-gray-700 truncate max-w-xs">{{ file }}</span>
+                        <span class="font-mono text-xs text-blue-500">Route pour le fichier : /file/{{ file }}</span>
+                    </div>
+                    <button onclick="deleteFile('{{ file }}')"
+                        class="px-3 py-1 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors text-sm font-medium">
+                        Supprimer
+                    </button>
+                </li>
+                {% else %}
+                <li class="text-gray-500 italic">Aucun fichier disponible</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 
     <script>
         document.getElementById('uploadForm').onsubmit = async function (event) {
             event.preventDefault();
-            let formData = new FormData();
-            formData.append("file", document.getElementById("fileInput").files[0]);
-            await fetch("/upload", { method: "POST", body: formData });
-            location.reload();
+            const fileInput = document.getElementById("fileInput");
+            if (!fileInput.files[0]) return;
+
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Envoi en cours...';
+
+            try {
+                let formData = new FormData();
+                formData.append("file", fileInput.files[0]);
+                await fetch("/upload", { method: "POST", body: formData });
+                location.reload();
+            } catch (error) {
+                alert("Erreur lors de l'envoi du fichier");
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Envoyer';
+            }
         }
 
         async function deleteFile(filename) {
-            await fetch(`/file/${filename}`, { method: "DELETE" });
-            location.reload();
+            if (!confirm(`Voulez-vous vraiment supprimer "${filename}" ?`)) return;
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = 'Suppression...';
+
+            try {
+                await fetch(`/file/${filename}`, { method: "DELETE" });
+                location.reload();
+            } catch (error) {
+                alert("Erreur lors de la suppression");
+                btn.disabled = false;
+                btn.innerHTML = 'Supprimer';
+            }
         }
     </script>
 </body>
