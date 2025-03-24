@@ -35,5 +35,6 @@ jobs:
                       sudo docker rm flask-json-api || true
                       sudo docker run -d \
                         --name flask-json-api \
+                        --hostname flask-json-api \
                         --network bridge \
                         ${{ secrets.DOCKER_HUB_USERNAME }}/flask-json-api:latest
