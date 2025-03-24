@@ -30,11 +30,15 @@ jobs:
                   username: ${{ secrets.SERVER_USER }}
                   key: ${{ secrets.SERVER_SSH_KEY }}
                   script: |
+                      sudo docker network create npmNetwork || true
+
                       sudo docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/flask-json-api:latest
+
                       sudo docker stop flask-json-api || true
                       sudo docker rm flask-json-api || true
+
                       sudo docker run -d \
                         --name flask-json-api \
                         --hostname flask-json-api \
-                        --network bridge \
+                        --network npmNetwork \
                         ${{ secrets.DOCKER_HUB_USERNAME }}/flask-json-api:latest
